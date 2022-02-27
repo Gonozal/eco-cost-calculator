@@ -2,7 +2,7 @@ export interface Recipe {
   ingredients: Ingredient[];
   products: Product[];
   name: string;
-  calorie: number;
+  calorie?: number;
   xp: number;
   table: string;
   profession: Profession[];
