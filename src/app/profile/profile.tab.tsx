@@ -1,4 +1,6 @@
 import { Grid, Paper } from '@mui/material';
+import { useImmerReducer } from 'use-immer';
+import { initialState, reducer } from '../common/state';
 import { Section } from '../layout/section';
 import { Product } from '../products/products.index';
 
@@ -9,9 +11,13 @@ interface ProfileTabProps {
   activeProfile: string;
 }
 
-export const ProfileTab: React.FC<ProfileTabProps> = (props) => {
-  const { activeProfile, profile, children, ...other } = props;
-
+export const ProfileTab: React.FC<ProfileTabProps> = ({
+  activeProfile,
+  profile,
+  children,
+  ...other
+}) => {
+  const [state, dispatch] = useImmerReducer(reducer, { ...initialState });
   return (
     <div
       role="tabpanel"
@@ -28,17 +34,21 @@ export const ProfileTab: React.FC<ProfileTabProps> = (props) => {
           justifyContent="stretch"
           sx={{ padding: 2, height: '100%' }}
         >
-          <Grid item xs={4}>
+          <Grid item xs={3}>
             <Section heading="Skills and Crafting Stations">
               <SkillSegment />
             </Section>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={4}>
             <Section heading="Inputs">2</Section>
           </Grid>
           <Grid item xs={5}>
             <Section heading="Products">
-              <Product />
+              <Product
+                dispatch={dispatch}
+                products={state.products}
+                recipes={state.recipes}
+              />
             </Section>
           </Grid>
         </Grid>
