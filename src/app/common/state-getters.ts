@@ -17,6 +17,16 @@ export function getIngredientItem(
   return item;
 }
 
+export function getByproductItem(
+  draft: AppState,
+  ingredient: { item?: string | null; tag?: string | null },
+): Item {
+  const key = (ingredient.item ?? ingredient.tag) as string;
+  const item = draft.byproducts.get(key) ?? draft.products.get(key);
+  if (!item) throw new Error(`could not find byproduct with key ${key}`);
+  return item;
+}
+
 export function getRecipeOrThrow(
   recipes: CraftingRecipeMap,
   key: string,
@@ -26,16 +36,20 @@ export function getRecipeOrThrow(
   return recipe;
 }
 
+export function getCraftingStationName({ recipe }: { recipe: CraftingRecipe }) {
+  return `${recipe.table}|${recipe.profession[0].skill}`;
+}
+
 export function getCraftingStationForRecipe(
   draft: AppState,
   recipe: CraftingRecipe,
 ): CraftingStation {
   const station = draft.craftingStations.get(
-    `${recipe.table}|${recipe.profession[0].skill}`,
+    getCraftingStationName({ recipe }),
   );
   if (!station)
     throw new Error(
-      `Could not find ${recipe.table} for ${recipe.profession[0].skill}`,
+      `Could not find ${recipe.table} for ${recipe.profession[0].skill}.`,
     );
   return station;
 }
