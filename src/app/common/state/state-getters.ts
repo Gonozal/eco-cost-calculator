@@ -8,9 +8,9 @@ import {
 
 export function getIngredientItem(
   draft: AppState,
-  ingredient: { item?: string | null; tag?: string | null },
+  ingredient: { name?: string | null; tag?: string | null },
 ): Item {
-  const key = (ingredient.item ?? ingredient.tag) as string;
+  const key = (ingredient.name ?? ingredient.tag) as string;
   const item = draft.inputs.get(key) ?? draft.products.get(key);
   if (!item)
     throw new Error(`could not find ingredient or product with key ${key}`);
@@ -19,9 +19,9 @@ export function getIngredientItem(
 
 export function getByproductItem(
   draft: AppState,
-  ingredient: { item?: string | null; tag?: string | null },
+  ingredient: { name?: string | null; tag?: string | null },
 ): Item {
-  const key = (ingredient.item ?? ingredient.tag) as string;
+  const key = (ingredient.name ?? ingredient.tag) as string;
   const item = draft.byproducts.get(key) ?? draft.products.get(key);
   if (!item) throw new Error(`could not find byproduct with key ${key}`);
   return item;
@@ -37,7 +37,7 @@ export function getRecipeOrThrow(
 }
 
 export function getCraftingStationName({ recipe }: { recipe: CraftingRecipe }) {
-  return `${recipe.table}|${recipe.profession[0].skill}`;
+  return `${recipe.table}|${recipe.professions[0].name}`;
 }
 
 export function getCraftingStationForRecipe(
@@ -49,7 +49,7 @@ export function getCraftingStationForRecipe(
   );
   if (!station)
     throw new Error(
-      `Could not find ${recipe.table} for ${recipe.profession[0].skill}.`,
+      `Could not find ${recipe.table} for ${recipe.professions[0].name}.`,
     );
   return station;
 }

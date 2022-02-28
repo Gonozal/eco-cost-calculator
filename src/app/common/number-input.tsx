@@ -9,9 +9,10 @@ export const NumberInput: React.FC<TextFieldProps> = ({
   return (
     <TextField
       margin="dense"
-      variant="standard"
+      variant="outlined"
       fullWidth
       size="small"
+      inputProps={{ style: { textAlign: 'right' } }}
       InputProps={{
         inputComponent: NumberFormatCustom as any,
       }}
@@ -43,6 +44,7 @@ const NumberFormatCustom = React.forwardRef<
           },
         });
       }}
+      decimalScale={3}
       thousandSeparator
       isNumericString
     />
