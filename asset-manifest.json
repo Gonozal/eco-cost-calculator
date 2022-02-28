@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/eco-cost-calculator/static/css/main.2b4591af.css",
+    "main.js": "/eco-cost-calculator/static/js/main.24d8c98b.js",
+    "static/js/787.4c7f7380.chunk.js": "/eco-cost-calculator/static/js/787.4c7f7380.chunk.js",
+    "index.html": "/eco-cost-calculator/index.html",
+    "main.2b4591af.css.map": "/eco-cost-calculator/static/css/main.2b4591af.css.map",
+    "main.24d8c98b.js.map": "/eco-cost-calculator/static/js/main.24d8c98b.js.map",
+    "787.4c7f7380.chunk.js.map": "/eco-cost-calculator/static/js/787.4c7f7380.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2b4591af.css",
+    "static/js/main.24d8c98b.js"
+  ]
+}
