@@ -6,18 +6,23 @@ import {
 } from './state-actions/add-recipe.action';
 import { processRemoveRecipeAction } from './state-actions/remove-recipe.action';
 import { updateCalorieCostAction } from './state-actions/update-calorie-cost.action';
+import { updateCraftingStationAction } from './state-actions/update-crafting-station.action';
 import { updateMarginAction } from './state-actions/update-margin.action';
-import { updateProfessionLevelAction } from './state-actions/update-profession-level.action';
+import { updateProfessionAction } from './state-actions/update-profession-level.action';
 import {
   markForUpdate,
   updateByproductPrice,
   updatePrice,
 } from './update-prices';
 
+export interface ProfessionState extends Profession {
+  hasLavishWorkspace?: boolean;
+}
+
 export type ItemMap = Map<string, Item>;
 export type CraftingRecipeMap = Map<string, CraftingRecipe>;
 export type CraftingStationMap = Map<string, CraftingStation>;
-export type ProfessionMap = Map<string, Profession>;
+export type ProfessionMap = Map<string, ProfessionState>;
 export interface AppState {
   id: number;
   calorieCost: number;
@@ -49,11 +54,12 @@ export interface CraftingRecipe extends Recipe {
   highlighted: boolean;
   margin?: number;
 }
+export type UpgradeLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface CraftingStation {
   name: string;
-  upgradeLevel: 0 | 1 | 2 | 3 | 4 | 5;
-  profession: Profession;
+  upgradeLevel: UpgradeLevel;
+  profession: ProfessionState;
   workflowFactor: number;
   usedByRecipes: Set<string>;
 }
@@ -81,7 +87,7 @@ export enum ActionType {
   UPDATE_ITEM_PRICE,
   UPDATE_BYPRODUCT_PRICE,
   UPDATE_CRAFTING_STATION_UPGRADE,
-  UPDATE_PROFESSION_LEVEL,
+  UPDATE_PROFESSION,
   UPDATE_CALORIE_COST,
   UPDATE_MARGIN,
 }
@@ -122,9 +128,14 @@ interface UpdateByproductPriceAction {
   };
 }
 
+interface UpdateCraftingStationAction {
+  type: ActionType.UPDATE_CRAFTING_STATION_UPGRADE;
+  updatedCraftingStation: CraftingStation;
+}
+
 interface UpdateProfessionLevelAction {
-  type: ActionType.UPDATE_PROFESSION_LEVEL;
-  updatedProfession: Profession;
+  type: ActionType.UPDATE_PROFESSION;
+  updatedProfession: ProfessionState;
 }
 interface UpdateMarginAction {
   type: ActionType.UPDATE_MARGIN;
@@ -145,6 +156,7 @@ export type Action =
   | UpdateRecipeMarginAction
   | UpdateMarginAction
   | UpdateProfessionLevelAction
+  | UpdateCraftingStationAction
   | UpdateCalorieCostAction;
 
 export function reducer(draft: AppState, action: Action): void | AppState {
@@ -187,8 +199,8 @@ function processAction(draft: AppState, action: Action): void {
         draft,
         updatedItem: action.updatedItem,
       });
-    case ActionType.UPDATE_PROFESSION_LEVEL:
-      return updateProfessionLevelAction({
+    case ActionType.UPDATE_PROFESSION:
+      return updateProfessionAction({
         draft,
         updatedProfession: action.updatedProfession,
       });
@@ -196,6 +208,11 @@ function processAction(draft: AppState, action: Action): void {
       return updateMarginAction({ draft, newMargin: action.newMargin });
     case ActionType.UPDATE_CALORIE_COST:
       return updateCalorieCostAction({ draft, newCost: action.newCost });
+    case ActionType.UPDATE_CRAFTING_STATION_UPGRADE:
+      return updateCraftingStationAction({
+        draft,
+        updatedCraftingStation: action.updatedCraftingStation,
+      });
     default:
       return;
   }

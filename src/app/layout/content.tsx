@@ -17,13 +17,19 @@ export const Content: React.FC = () => {
     if (loaded) {
       const parsed = JSON.parse(loaded);
       if (parsed instanceof Array) {
-        setProfiles(new Map(JSON.parse(loaded) as [number, Profile][]));
+        setProfiles(new Map(parsed as [number, Profile][]));
         return;
       }
     }
 
     setProfiles(new Map([[defaultProfile.id, defaultProfile]]));
   }, [setProfiles]);
+
+  React.useEffect(() => {
+    if (!profiles || profiles.size === 0) return;
+    console.log('saving profile');
+    localStorage.setItem('profiles', JSON.stringify([...profiles]));
+  }, [profiles, setProfiles]);
 
   if (!profiles) return null;
   return <Profiles profiles={profiles} setProfiles={setProfiles} />;

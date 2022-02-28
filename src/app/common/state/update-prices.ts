@@ -1,4 +1,3 @@
-import { current } from 'immer';
 import { AppState, CraftingRecipe, Item } from './state';
 
 import {
@@ -54,7 +53,6 @@ export function updatePrice({ draft, element }: UpdatePricesProps): void {
   if (draft.updated.has(element.name)) {
     return;
   }
-
   try {
     if ('usedInRecipes' in element) {
       updateItemPrice({ draft, item: element });
@@ -112,16 +110,15 @@ export function updateItemPrice({ draft, item }: UpdateItemPriceProps) {
     draft.updated.add(item.name);
     return;
   }
+  let newPrice = Number.MAX_SAFE_INTEGER;
 
-  item.price = Array.from(item.productOfRecipes.values()).reduce(
-    (cost, recipeName) => {
-      assertItemHasUpdated(draft, recipeName);
-      const recipe = getRecipeOrThrow(draft.recipes, recipeName);
-      return Math.min(cost, recipe.price);
-    },
-    Number.MAX_SAFE_INTEGER,
-  );
+  item.productOfRecipes.forEach((recipeName) => {
+    assertItemHasUpdated(draft, recipeName);
+    const recipe = getRecipeOrThrow(draft.recipes, recipeName);
+    newPrice = Math.min(newPrice, recipe.price);
+  });
 
+  item.price = newPrice;
   draft.updated.add(item.name);
 }
 
@@ -153,7 +150,14 @@ function updateRecipePrice({ draft, recipe }: UpdateRecipePriceProps) {
       return cost + ingredientCost;
     }
 
-    return cost + ingredientCost * upgradeEffect[craftingStation.upgradeLevel];
+    const lavishFactor = profession.hasLavishWorkspace ? 0.95 : 1;
+
+    return (
+      cost +
+      ingredientCost *
+        upgradeEffect[craftingStation.upgradeLevel] *
+        lavishFactor
+    );
   }, 0);
 
   const calorieCost =

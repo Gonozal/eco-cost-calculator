@@ -1,12 +1,11 @@
-import { Profession } from '../../../../data/recipes';
-import { CraftingRecipe, ProcessActionProps } from '../state';
+import { CraftingRecipe, ProcessActionProps, ProfessionState } from '../state';
 import { markForUpdate, updatePrice } from '../update-prices';
 
 interface UpdateProfessionLevelProps extends ProcessActionProps {
-  updatedProfession: Profession;
+  updatedProfession: ProfessionState;
 }
 
-export const updateProfessionLevelAction = ({
+export const updateProfessionAction = ({
   draft,
   updatedProfession,
 }: UpdateProfessionLevelProps) => {
@@ -14,6 +13,8 @@ export const updateProfessionLevelAction = ({
   if (!profession) return;
 
   profession.level = updatedProfession.level;
+  profession.hasLavishWorkspace =
+    updatedProfession.level >= 6 && updatedProfession.hasLavishWorkspace;
 
   draft.recipes.forEach((recipe) => {
     if (!recipeMatchesProfession(recipe, profession)) return;
@@ -30,7 +31,7 @@ export const updateProfessionLevelAction = ({
 
 function recipeMatchesProfession(
   recipe: CraftingRecipe,
-  profession: Profession,
+  profession: ProfessionState,
 ) {
   return recipe.professions.some(
     (recipeProfession) => recipeProfession.name === profession.name,

@@ -29,7 +29,6 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
 
   React.useEffect(() => {
     const loaded = localStorage.getItem(`state-${profileId}`);
-    console.log('LOADING STATE');
     if (!loaded) {
       setLoadedState({ ...initialState, id: profileId });
       return;

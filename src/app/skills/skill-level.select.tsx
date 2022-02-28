@@ -1,10 +1,9 @@
 import { TextField } from '@mui/material';
-import { Profession } from '../../data/recipes';
-import { Action, ActionType } from '../common/state/state';
+import { Action, ActionType, ProfessionState } from '../common/state/state';
 
 interface SkillLevelSelectProps {
   dispatch: React.Dispatch<Action>;
-  profession: Profession;
+  profession: ProfessionState;
 }
 export const SkillLevelSelect: React.FC<SkillLevelSelectProps> = ({
   dispatch,
@@ -19,7 +18,7 @@ export const SkillLevelSelect: React.FC<SkillLevelSelectProps> = ({
       value={profession.level}
       onChange={(event) =>
         dispatch({
-          type: ActionType.UPDATE_PROFESSION_LEVEL,
+          type: ActionType.UPDATE_PROFESSION,
           updatedProfession: {
             ...profession,
             level: Math.min(Math.max(parseInt(event.target.value, 10), 0), 7),

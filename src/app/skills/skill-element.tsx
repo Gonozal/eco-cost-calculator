@@ -1,8 +1,9 @@
-import { Stack, Typography } from '@mui/material';
+import { Checkbox, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { FlexItem } from '../common/flex-grid-item';
 import {
   Action,
+  ActionType,
   CraftingStationMap,
   ProfessionMap,
 } from '../common/state/state';
@@ -26,6 +27,27 @@ export const SkillSegment: React.FC<SkillSegmentProps> = ({
           <FlexItem>
             <Typography variant="h6" component="div">
               {profession.displayName}
+              {profession.level >= 6 && (
+                <>
+                  <Typography variant="body2" component="div">
+                    Lavish Workspace Bonus?
+                    <Checkbox
+                      size="small"
+                      sx={{ margin: 0 }}
+                      checked={Boolean(profession.hasLavishWorkspace)}
+                      onChange={(event) =>
+                        dispatch({
+                          type: ActionType.UPDATE_PROFESSION,
+                          updatedProfession: {
+                            ...profession,
+                            hasLavishWorkspace: event.target.checked,
+                          },
+                        })
+                      }
+                    />
+                  </Typography>
+                </>
+              )}
             </Typography>
             <SkillLevelSelect dispatch={dispatch} profession={profession} />
           </FlexItem>

@@ -13,8 +13,10 @@ export const updateMarginAction = ({
   draft.recipes.forEach((recipe) => {
     markForUpdate({ draft, element: recipe });
   });
+
   draft.recipes.forEach((recipe) => {
     updatePrice({ draft, element: recipe });
   });
+
   return;
 };
