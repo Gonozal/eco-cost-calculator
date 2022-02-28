@@ -152,12 +152,17 @@ function updateRecipePrice({ draft, recipe }: UpdateRecipePriceProps) {
 
     const lavishFactor = profession.hasLavishWorkspace ? 0.95 : 1;
 
-    return (
-      cost +
-      ingredientCost *
-        upgradeEffect[craftingStation.upgradeLevel] *
-        lavishFactor
-    );
+    const itemQuantity =
+      ingredient.quantity *
+      upgradeEffect[craftingStation.upgradeLevel] *
+      lavishFactor;
+
+    const batchedQuantity = recipe.batchSize
+      ? Math.ceil(itemQuantity * recipe.batchSize) / recipe.batchSize
+      : itemQuantity;
+    console.log({ itemQuantity, batchedQuantity });
+
+    return cost + batchedQuantity * item.price;
   }, 0);
 
   const calorieCost =

@@ -6,6 +6,7 @@ import {
 } from './state-actions/add-recipe.action';
 import { importProfileAction } from './state-actions/import-profile.action';
 import { processRemoveRecipeAction } from './state-actions/remove-recipe.action';
+import { updateRecipeSettingsAction } from './state-actions/set-recipe-settings.action';
 import { updateCalorieCostAction } from './state-actions/update-calorie-cost.action';
 import { updateCraftingStationAction } from './state-actions/update-crafting-station.action';
 import { updateDataJsonAction } from './state-actions/update-data-json.action';
@@ -54,6 +55,7 @@ export interface Item {
 export interface CraftingRecipe extends Recipe {
   price: number;
   highlighted: boolean;
+  batchSize?: number;
   margin?: number;
 }
 export type UpgradeLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -86,7 +88,7 @@ export enum ActionType {
   ADD_RECIPE_FROM_INPUT,
   UPLOAD_DATA_JSON,
   REMOVE_RECIPE,
-  UPDATE_RECIPE_MARGIN,
+  UPDATE_RECIPE_SETTINGS,
   UPDATE_ITEM_PRICE,
   UPDATE_BYPRODUCT_PRICE,
   UPDATE_CRAFTING_STATION_UPGRADE,
@@ -111,9 +113,12 @@ interface RemoveRecipeAction {
 }
 
 interface UpdateRecipeMarginAction {
-  type: ActionType.UPDATE_RECIPE_MARGIN;
-  recipe: CraftingRecipe;
-  newMargin: number;
+  type: ActionType.UPDATE_RECIPE_SETTINGS;
+  updatedRecipe: {
+    name: string;
+    margin: number;
+    batchSize: number;
+  };
 }
 
 interface UpdateItemPriceAction {
@@ -236,6 +241,11 @@ function processAction(draft: AppState, action: Action): void {
       return importProfileAction({
         draft,
         profileString: action.profileString,
+      });
+    case ActionType.UPDATE_RECIPE_SETTINGS:
+      return updateRecipeSettingsAction({
+        draft,
+        updatedRecipe: action.updatedRecipe,
       });
     default:
       return;

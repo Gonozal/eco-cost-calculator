@@ -1,5 +1,18 @@
 import ClearIcon from '@mui/icons-material/Clear';
-import { Box, IconButton, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  InputAdornment,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { Recipe } from '../../data/recipes';
 import {
   Action,
@@ -7,10 +20,15 @@ import {
   ItemMap,
   Item,
   ActionType,
+  CraftingRecipe,
 } from '../common/state/state';
 import { getRecipeOrThrow } from '../common/state/state-getters';
 import { PriceDisplay } from './price-display';
 import { RecipeAutocomplete } from './recipe.autocomplete';
+import SettingsIcon from '@mui/icons-material/Settings';
+import React from 'react';
+import { FlexItem } from '../common/flex-grid-item';
+import { NumberInput } from '../common/number-input';
 
 interface ProductProps {
   dispatch: React.Dispatch<Action>;
@@ -77,6 +95,11 @@ const ProductRow: React.FC<ProductRowProps> = ({
         <Typography component="span">{product.displayName}</Typography>
         <Typography sx={{ float: 'right', paddingRight: 2 }} component="span">
           <PriceDisplay price={product.price} />
+          <RecipeSettings
+            dispatch={dispatch}
+            product={product}
+            recipes={itemRecipes}
+          />
         </Typography>
       </div>
       {itemRecipes.length > 1 &&
@@ -99,9 +122,108 @@ const ProductRow: React.FC<ProductRowProps> = ({
               component="span"
             >
               <PriceDisplay price={recipe.price} />
+              <RecipeSettings
+                dispatch={dispatch}
+                product={product}
+                recipes={[recipe]}
+              />
             </Typography>
           </Box>
         ))}
+    </>
+  );
+};
+
+interface RecipeSettingsProps {
+  dispatch: React.Dispatch<Action>;
+  product: Item;
+  recipes: CraftingRecipe[];
+}
+const RecipeSettings: React.FC<RecipeSettingsProps> = ({
+  dispatch,
+  recipes,
+}) => {
+  const primaryRecipe: CraftingRecipe | undefined = recipes[0];
+
+  const [batchSize, setBatchSize] = React.useState(
+    primaryRecipe?.batchSize || 0,
+  );
+  const [margin, setMargin] = React.useState(
+    (primaryRecipe?.margin || 0) * 100,
+  );
+  const [isDialogVisible, setIsDialogVisible] = React.useState(false);
+
+  const isOriginal = React.useMemo(
+    () => batchSize === 0 && margin === 0,
+    [batchSize, margin],
+  );
+  if (recipes.length > 1) return <IconButton sx={{ width: 34 }} />;
+
+  return (
+    <>
+      <IconButton size="small" onClick={() => setIsDialogVisible(true)}>
+        <SettingsIcon color={isOriginal ? undefined : 'primary'} />
+      </IconButton>
+      <Dialog open={isDialogVisible} onClose={() => setIsDialogVisible(false)}>
+        <DialogTitle>Configure Recipe: {primaryRecipe.name}</DialogTitle>
+        <DialogContent>
+          <Stack>
+            <FlexItem>
+              <Typography component="span">Profit Margin</Typography>
+              <NumberInput
+                value={margin}
+                onChange={(event) => {
+                  const parsed = parseFloat(event.target.value);
+                  setMargin(isNaN(parsed) ? margin : parsed);
+                }}
+                sx={{ width: 140, paddingLeft: 4 }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">%</InputAdornment>
+                  ),
+                }}
+              />
+            </FlexItem>
+            <FlexItem>
+              <Typography component="span">Batch Size</Typography>
+              <NumberInput
+                value={batchSize}
+                onChange={(event) => {
+                  const parsed = parseInt(event.target.value, 10);
+                  setBatchSize(isNaN(parsed) ? batchSize : parsed);
+                }}
+                sx={{ width: 140, paddingLeft: 4 }}
+              />
+            </FlexItem>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setIsDialogVisible(false);
+              setBatchSize(primaryRecipe?.batchSize || 0);
+              setMargin(primaryRecipe?.margin || 0);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              dispatch({
+                type: ActionType.UPDATE_RECIPE_SETTINGS,
+                updatedRecipe: {
+                  name: primaryRecipe.name,
+                  batchSize,
+                  margin: margin / 100,
+                },
+              });
+              setIsDialogVisible(false);
+            }}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
