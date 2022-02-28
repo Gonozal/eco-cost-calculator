@@ -1,57 +1,59 @@
-import { Grid, Paper } from '@mui/material';
-import { useImmerReducer } from 'use-immer';
-import { initialState, reducer } from '../common/state';
-import { Section } from '../layout/section';
-import { Product } from '../products/products.index';
-
-import { SkillSegment } from '../skills/skill-element';
+import React from 'react';
+import { Updater } from 'use-immer';
+import {
+  AppState,
+  deserializeState,
+  initialState,
+} from '../common/state/state';
+import { ProfileMap } from '../layout/content';
+import { ProfileWrapper } from './profile.wrapper';
 
 interface ProfileTabProps {
-  profile: string;
-  activeProfile: string;
+  selectedProfileId: number;
+  profileName: string;
+  profileId: number;
+  profiles: ProfileMap;
+  setProfiles: Updater<ProfileMap | null>;
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
-  activeProfile,
-  profile,
+  profileName,
+  profileId,
+  selectedProfileId,
+  profiles,
+  setProfiles,
   children,
   ...other
 }) => {
-  const [state, dispatch] = useImmerReducer(reducer, { ...initialState });
+  const [loadedState, setLoadedState] = React.useState<AppState | null>(null);
+
+  React.useEffect(() => {
+    const loaded = localStorage.getItem(`state-${profileId}`);
+    console.log('LOADING STATE');
+    if (!loaded) {
+      setLoadedState({ ...initialState, id: profileId });
+      return;
+    }
+    const state = deserializeState(loaded);
+    setLoadedState(state);
+  }, [setLoadedState, profileId]);
+
+  if (!loadedState) return null;
   return (
     <div
       role="tabpanel"
-      hidden={activeProfile !== profile}
-      id={`profile-tabpanel-${profile}`}
-      aria-labelledby={`profile-tab-${profile}`}
+      hidden={selectedProfileId !== profileId}
+      id={`profile-tabpanel-${profileId}`}
+      aria-labelledby={`profile-tab-${profileId}`}
       style={{ height: '100%' }}
       {...other}
     >
-      {activeProfile === profile && (
-        <Grid
-          container
-          spacing={1}
-          justifyContent="stretch"
-          sx={{ padding: 2, height: '100%' }}
-        >
-          <Grid item xs={3}>
-            <Section heading="Skills and Crafting Stations">
-              <SkillSegment />
-            </Section>
-          </Grid>
-          <Grid item xs={4}>
-            <Section heading="Inputs">2</Section>
-          </Grid>
-          <Grid item xs={5}>
-            <Section heading="Products">
-              <Product
-                dispatch={dispatch}
-                products={state.products}
-                recipes={state.recipes}
-              />
-            </Section>
-          </Grid>
-        </Grid>
+      {selectedProfileId === profileId && (
+        <ProfileWrapper
+          loadedState={loadedState}
+          profiles={profiles}
+          setProfiles={setProfiles}
+        />
       )}
     </div>
   );

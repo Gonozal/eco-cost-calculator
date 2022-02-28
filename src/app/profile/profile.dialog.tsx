@@ -1,5 +1,4 @@
 import React from 'react';
-import { Profile } from './profile.index';
 import Button from '@mui/material/Button';
 
 import TextField from '@mui/material/TextField';
@@ -8,6 +7,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { Profile } from '../layout/content';
 
 interface ProfileConfigProps {
   onClose: (profile?: Profile) => void;
@@ -40,7 +40,6 @@ export const ProfileConfigDialog: React.FC<ProfileConfigProps> = ({
           <TextField
             margin="dense"
             label="Profile Name"
-            type="number"
             fullWidth
             variant="standard"
             error={Boolean(errors.name)}

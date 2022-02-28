@@ -1,19 +1,14 @@
 import ClearIcon from '@mui/icons-material/Clear';
-import {
-  Grid,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Typography,
-} from '@mui/material';
+import { Box, IconButton, Stack, Typography } from '@mui/material';
 import {
   Action,
   CraftingRecipeMap,
   ItemMap,
+  Item,
   ActionType,
-} from '../common/state';
-import { getRecipeOrThrow } from '../common/state-getters';
+} from '../common/state/state';
+import { getRecipeOrThrow } from '../common/state/state-getters';
+import { PriceDisplay } from './price-display';
 import { RecipeAutocomplete } from './recipe.autocomplete';
 
 interface ProductProps {
@@ -27,31 +22,79 @@ export const Product: React.FC<ProductProps> = ({
   recipes,
 }) => {
   return (
-    <Grid container>
-      <Grid item xs={12} sx={{ paddingBottom: 2 }}>
-        <RecipeAutocomplete dispatch={dispatch} />
-      </Grid>
+    <Stack>
+      <RecipeAutocomplete dispatch={dispatch} selectedRecipes={recipes} />
       {Array.from(products.values()).map((product) => (
-        <Grid item xs={12} key={product.name}>
-          <IconButton
-            onClick={() => {
-              product.productOfRecipes.forEach((recipeName) => {
-                const recipe = getRecipeOrThrow(recipes, recipeName);
+        <ProductRow
+          key={product.name}
+          dispatch={dispatch}
+          recipes={recipes}
+          product={product}
+        />
+      ))}
+    </Stack>
+  );
+};
+interface ProductRowProps {
+  dispatch: React.Dispatch<Action>;
+  product: Item;
+  recipes: CraftingRecipeMap;
+}
+
+const ProductRow: React.FC<ProductRowProps> = ({
+  dispatch,
+  recipes,
+  product,
+}) => {
+  const itemRecipes = Array.from(product.productOfRecipes)
+    .map((recipeName) => getRecipeOrThrow(recipes, recipeName))
+    .filter((recipe) => {
+      return recipe.mainProduct.name === product.name;
+    });
+
+  return (
+    <>
+      <div>
+        <IconButton
+          onClick={() => {
+            itemRecipes.forEach((recipe) => {
+              dispatch({
+                type: ActionType.REMOVE_RECIPE,
+                removedRecipe: recipe,
+              });
+            });
+          }}
+        >
+          <ClearIcon />
+        </IconButton>
+        <Typography component="span">{product.displayName}</Typography>
+        <Typography sx={{ float: 'right', paddingRight: 2 }} component="span">
+          <PriceDisplay price={product.price} />
+        </Typography>
+      </div>
+      {itemRecipes.length > 1 &&
+        itemRecipes.map((recipe) => (
+          <Box key={recipe.name} sx={{ paddingLeft: 3 }}>
+            <IconButton
+              size="small"
+              onClick={() => {
                 dispatch({
                   type: ActionType.REMOVE_RECIPE,
                   removedRecipe: recipe,
                 });
-              });
-            }}
-          >
-            <ClearIcon />
-          </IconButton>
-          <Typography component="span">{product.name}</Typography>
-          <Typography sx={{ float: 'right', paddingRight: 2 }} component="span">
-            {product.price}
-          </Typography>
-        </Grid>
-      ))}
-    </Grid>
+              }}
+            >
+              <ClearIcon />
+            </IconButton>
+            <Typography component="span">{recipe.name}</Typography>
+            <Typography
+              sx={{ float: 'right', paddingRight: 2 }}
+              component="span"
+            >
+              <PriceDisplay price={recipe.price} />
+            </Typography>
+          </Box>
+        ))}
+    </>
   );
 };

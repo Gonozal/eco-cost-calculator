@@ -7,24 +7,21 @@ import IconButton from '@mui/material/IconButton';
 
 import { ProfileTab } from '../profile/profile.tab';
 import { ProfileConfigDialog } from './profile.dialog';
-import { useImmer } from 'use-immer';
+import { ProfileMap } from '../layout/content';
+import { Updater } from 'use-immer';
+import { current } from 'immer';
 
-export interface Profile {
-  name: string;
+interface ProfilesProps {
+  profiles: ProfileMap;
+  setProfiles: Updater<ProfileMap | null>;
 }
-
-const defaultProfile: Profile = { name: 'Default' };
-const emptyProfile: Profile = { name: '' };
-
-export const Profiles: React.FC = () => {
-  const [profiles, setProfiles] = useImmer<Map<string, Profile>>(
-    new Map([[defaultProfile.name, defaultProfile]]),
+export const Profiles: React.FC<ProfilesProps> = ({
+  profiles,
+  setProfiles,
+}) => {
+  const [activeProfile, setActiveProfile] = React.useState<number>(
+    Array.from(profiles.values())[0].id,
   );
-  const [activeProfile, setActiveProfile] = React.useState<string>(
-    defaultProfile.name,
-  );
-
-  const [editedProfile, setEditedProfile] = React.useState<string | null>(null);
 
   const [isDialogVisible, setIsDialogVisible] = React.useState<boolean>(false);
 
@@ -36,8 +33,8 @@ export const Profiles: React.FC = () => {
           onChange={(_, newValue) => setActiveProfile(newValue)}
           aria-label="Profile Tabs"
         >
-          {Array.from(profiles).map(([name]) => (
-            <Tab label={name} value={name} key={name} />
+          {Array.from(profiles).map(([_, profile]) => (
+            <Tab label={profile.name} value={profile.id} key={profile.id} />
           ))}
           <IconButton onClick={() => setIsDialogVisible(true)}>
             <AddIcon />
@@ -50,16 +47,35 @@ export const Profiles: React.FC = () => {
             setIsDialogVisible(false);
             if (!profile) return;
 
-            setProfiles((draft) =>
-              draft.set(editedProfile ?? profile.name, profile),
-            );
+            setProfiles((draft) => {
+              if (!draft) {
+                localStorage.setItem(
+                  'profiles',
+                  JSON.stringify([[profile.id, profile]]),
+                );
+                return new Map([[profile.id, profile]]);
+              }
+
+              draft.set(profile.id, profile);
+              localStorage.setItem(
+                'profiles',
+                JSON.stringify(Array.from(current(draft).entries())),
+              );
+            });
           }}
           open={isDialogVisible}
-          profile={emptyProfile}
+          profile={{ id: Math.random(), name: '' }}
         />
       )}
-      {Array.from(profiles).map(([name]) => (
-        <ProfileTab key={name} profile={name} activeProfile={activeProfile} />
+      {Array.from(profiles.values()).map((profile) => (
+        <ProfileTab
+          key={profile.id}
+          profileId={profile.id}
+          selectedProfileId={activeProfile}
+          profileName={profile.name}
+          profiles={profiles}
+          setProfiles={setProfiles}
+        />
       ))}
     </Box>
   );
