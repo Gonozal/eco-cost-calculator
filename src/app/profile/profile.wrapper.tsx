@@ -63,6 +63,7 @@ export const ProfileWrapper: React.FC<ProfileWrapperProps> = ({
           <Product
             key={key}
             dispatch={dispatch}
+            data={state.data}
             products={state.products}
             recipes={state.recipes}
           />

@@ -1,4 +1,4 @@
-import { Checkbox, Stack, Typography } from '@mui/material';
+import { Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { FlexItem } from '../common/flex-grid-item';
 import {
@@ -28,25 +28,29 @@ export const SkillSegment: React.FC<SkillSegmentProps> = ({
             <Typography variant="h6" component="div">
               {profession.displayName}
               {profession.level >= 6 && (
-                <>
-                  <Typography variant="body2" component="div">
-                    Lavish Workspace Bonus?
-                    <Checkbox
-                      size="small"
-                      sx={{ margin: 0 }}
-                      checked={Boolean(profession.hasLavishWorkspace)}
-                      onChange={(event) =>
-                        dispatch({
-                          type: ActionType.UPDATE_PROFESSION,
-                          updatedProfession: {
-                            ...profession,
-                            hasLavishWorkspace: event.target.checked,
-                          },
-                        })
-                      }
-                    />
-                  </Typography>
-                </>
+                <div>
+                  <FormControlLabel
+                    label="Lavish Workspace Bonus?"
+                    sx={{ marginLeft: 0 }}
+                    labelPlacement="start"
+                    control={
+                      <Checkbox
+                        size="small"
+                        sx={{ margin: 0 }}
+                        checked={Boolean(profession.hasLavishWorkspace)}
+                        onChange={(event) =>
+                          dispatch({
+                            type: ActionType.UPDATE_PROFESSION,
+                            updatedProfession: {
+                              ...profession,
+                              hasLavishWorkspace: event.target.checked,
+                            },
+                          })
+                        }
+                      />
+                    }
+                  />
+                </div>
               )}
             </Typography>
             <SkillLevelSelect dispatch={dispatch} profession={profession} />

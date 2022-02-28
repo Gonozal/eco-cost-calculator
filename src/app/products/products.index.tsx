@@ -1,5 +1,6 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import { Box, IconButton, Stack, Typography } from '@mui/material';
+import { Recipe } from '../../data/recipes';
 import {
   Action,
   CraftingRecipeMap,
@@ -15,15 +16,21 @@ interface ProductProps {
   dispatch: React.Dispatch<Action>;
   products: ItemMap;
   recipes: CraftingRecipeMap;
+  data: Recipe[];
 }
 export const Product: React.FC<ProductProps> = ({
   dispatch,
   products,
   recipes,
+  data,
 }) => {
   return (
     <Stack>
-      <RecipeAutocomplete dispatch={dispatch} selectedRecipes={recipes} />
+      <RecipeAutocomplete
+        dispatch={dispatch}
+        selectedRecipes={recipes}
+        data={data}
+      />
       {Array.from(products.values()).map((product) => (
         <ProductRow
           key={product.name}

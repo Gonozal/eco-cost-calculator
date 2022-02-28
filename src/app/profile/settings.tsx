@@ -1,4 +1,8 @@
 import {
+  Button,
+  Checkbox,
+  Divider,
+  FormControlLabel,
   IconButton,
   InputAdornment,
   Paper,
@@ -13,7 +17,11 @@ import { ProfileMap } from '../layout/content';
 import { Action, ActionType, AppState } from '../common/state/state';
 import { Updater } from 'use-immer';
 import { NumberInput } from '../common/number-input';
+import styled from 'styled-components';
 
+const Input = styled('input')({
+  display: 'none',
+});
 interface SettingsProps {
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -31,6 +39,8 @@ export const Settings: React.FC<SettingsProps> = ({
   dispatch,
 }) => {
   const activeProfile = profiles.get(state.id);
+
+  const [showDangerousActions, setShowDangerousActions] = React.useState(false);
 
   if (!activeProfile) return null;
   return (
@@ -101,6 +111,63 @@ export const Settings: React.FC<SettingsProps> = ({
                 }}
               />
             </FlexItem>
+            <FlexItem>
+              <FormControlLabel
+                label="Show Dangerous Actions"
+                control={
+                  <Checkbox
+                    checked={showDangerousActions}
+                    color="error"
+                    onChange={() =>
+                      setShowDangerousActions(!showDangerousActions)
+                    }
+                  />
+                }
+              />
+            </FlexItem>
+            {showDangerousActions && (
+              <>
+                Upload new JSON-data. This resets all skills, inputs and
+                products
+                <label htmlFor="contained-button-file">
+                  <Input
+                    accept="application/json"
+                    id="contained-button-file"
+                    type="file"
+                    onChange={(event) => {
+                      const reader = new FileReader();
+                      const file = event.target.files?.[0];
+                      if (!file) return;
+                      reader.readAsText(file);
+
+                      reader.onload = (evt) => {
+                        dispatch({
+                          type: ActionType.UPLOAD_DATA_JSON,
+                          data: evt.target?.result as string,
+                        });
+                      };
+                      console.log(event.target.files);
+                    }}
+                  />
+                  <Button component="span" color="warning" fullWidth>
+                    Upload data-json
+                  </Button>
+                </label>
+                <Divider />
+                Delete the current profile. This action cannot be undone
+                <Button
+                  color="error"
+                  onClick={() => {
+                    if (profiles.size === 1) return;
+                    setProfiles((profile) => {
+                      profile?.delete(state.id);
+                    });
+                  }}
+                >
+                  Delete Profile
+                </Button>
+              </>
+            )}
           </>
         ) : (
           <>

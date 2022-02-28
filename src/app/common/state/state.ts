@@ -7,6 +7,7 @@ import {
 import { processRemoveRecipeAction } from './state-actions/remove-recipe.action';
 import { updateCalorieCostAction } from './state-actions/update-calorie-cost.action';
 import { updateCraftingStationAction } from './state-actions/update-crafting-station.action';
+import { updateDataJsonAction } from './state-actions/update-data-json.action';
 import { updateMarginAction } from './state-actions/update-margin.action';
 import { updateProfessionAction } from './state-actions/update-profession-level.action';
 import {
@@ -82,6 +83,7 @@ export const initialState: AppState = {
 export enum ActionType {
   ADD_RECIPE,
   ADD_RECIPE_FROM_INPUT,
+  UPLOAD_DATA_JSON,
   REMOVE_RECIPE,
   UPDATE_RECIPE_MARGIN,
   UPDATE_ITEM_PRICE,
@@ -133,6 +135,11 @@ interface UpdateCraftingStationAction {
   updatedCraftingStation: CraftingStation;
 }
 
+interface UpdateDataJsonAction {
+  type: ActionType.UPLOAD_DATA_JSON;
+  data: string;
+}
+
 interface UpdateProfessionLevelAction {
   type: ActionType.UPDATE_PROFESSION;
   updatedProfession: ProfessionState;
@@ -155,6 +162,7 @@ export type Action =
   | UpdateByproductPriceAction
   | UpdateRecipeMarginAction
   | UpdateMarginAction
+  | UpdateDataJsonAction
   | UpdateProfessionLevelAction
   | UpdateCraftingStationAction
   | UpdateCalorieCostAction;
@@ -213,6 +221,8 @@ function processAction(draft: AppState, action: Action): void {
         draft,
         updatedCraftingStation: action.updatedCraftingStation,
       });
+    case ActionType.UPLOAD_DATA_JSON:
+      return updateDataJsonAction({ draft, data: action.data });
     default:
       return;
   }

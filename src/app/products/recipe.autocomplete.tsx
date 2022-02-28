@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { Autocomplete, TextField } from '@mui/material';
-import { recipes } from '../../data/recipes';
 import { Action, ActionType, CraftingRecipeMap } from '../common/state/state';
 import { Recipe } from '../../data/recipes';
 import parse from 'autosuggest-highlight/parse';
@@ -14,16 +13,18 @@ const StyledListItem = styled.li`
 
 interface RecipeAutocompleteProps {
   dispatch: React.Dispatch<Action>;
+  data: Recipe[];
   selectedRecipes: CraftingRecipeMap;
 }
 export const RecipeAutocomplete: React.FC<RecipeAutocompleteProps> = ({
   dispatch,
+  data,
   selectedRecipes,
 }) => {
   return (
     <Autocomplete
       multiple
-      options={recipes as Recipe[]}
+      options={data}
       sx={{ paddingLeft: 4, paddingRight: 4, paddingBottom: 2 }}
       value={Array.from(selectedRecipes.values())}
       onChange={(_, values) => {

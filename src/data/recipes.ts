@@ -39,12 +39,16 @@ export interface ItemIngredient extends BaselineItem {
 
 export type Ingredient = ItemIngredient | TagIngredient;
 
-export const recipes: Recipe[] = protoRecipe.map((recipe) => {
-  const mainProduct = getMainProduct(recipe.products);
-  const byproduct = getByproduct(recipe.products);
+export const recipes: Recipe[] = recipesFromJson(protoRecipe);
 
-  return { ...recipe, mainProduct, byproduct };
-});
+export function recipesFromJson(json: any) {
+  return json.map((recipe: any) => {
+    const mainProduct = getMainProduct(recipe.products);
+    const byproduct = getByproduct(recipe.products);
+
+    return { ...recipe, mainProduct, byproduct };
+  });
+}
 
 export function getMainProduct(products: Product[]): Product {
   // Usual case. Only 1 product
