@@ -16,15 +16,17 @@ export const SkillLevelSelect: React.FC<SkillLevelSelectProps> = ({
       margin="dense"
       sx={{ float: 'right', width: 45 }}
       value={profession.level}
-      onChange={(event) =>
+      onChange={(event) => {
+        const parsed = parseInt(event.target.value, 10) || profession.level;
+
         dispatch({
           type: ActionType.UPDATE_PROFESSION,
           updatedProfession: {
             ...profession,
-            level: Math.min(Math.max(parseInt(event.target.value, 10), 0), 7),
+            level: Math.min(Math.max(parsed, 0), 7),
           },
-        })
-      }
+        });
+      }}
     />
   );
 };

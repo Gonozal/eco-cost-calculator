@@ -14,10 +14,11 @@ import React from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { FlexItem } from '../common/flex-grid-item';
 import { ProfileMap } from '../layout/content';
-import { Action, ActionType, AppState } from '../common/state/state';
+import { Action, ActionType, AppState, replacer } from '../common/state/state';
 import { Updater } from 'use-immer';
 import { NumberInput } from '../common/number-input';
 import styled from 'styled-components';
+import { profile } from 'console';
 
 const Input = styled('input')({
   display: 'none',
@@ -39,6 +40,7 @@ export const Settings: React.FC<SettingsProps> = ({
   dispatch,
 }) => {
   const activeProfile = profiles.get(state.id);
+  const [profileName, setProfileName] = React.useState(activeProfile?.name);
 
   const [showDangerousActions, setShowDangerousActions] = React.useState(false);
 
@@ -68,13 +70,59 @@ export const Settings: React.FC<SettingsProps> = ({
         {isVisible ? (
           <>
             <FlexItem>
+              <Button
+                component="a"
+                href={window.URL.createObjectURL(
+                  new Blob([JSON.stringify(state, replacer)]),
+                )}
+                download="cost-calc-profile.json"
+              >
+                Export Profile
+              </Button>
+              <label htmlFor="import-profile-button">
+                <Input
+                  accept="application/json"
+                  type="file"
+                  multiple
+                  id="import-profile-button"
+                  onChange={(event) => {
+                    const reader = new FileReader();
+                    const file = event.target.files?.[0];
+                    console.log(event.target.files);
+                    if (!file) return;
+                    reader.readAsText(file);
+
+                    reader.onload = (evt) => {
+                      dispatch({
+                        type: ActionType.IMPORT_PROFILE,
+                        profileString: evt.target?.result as string,
+                      });
+                    };
+                    event.target.value = '';
+                    event.target.files = null;
+                  }}
+                />
+                <Button component="span" color="warning" fullWidth>
+                  Import Profile
+                </Button>
+              </label>
+            </FlexItem>
+            <FlexItem>
               <Typography component="span">Profile Name</Typography>
               <TextField
                 variant="outlined"
                 margin="dense"
                 size="small"
                 inputProps={{ style: { textAlign: 'right' } }}
-                value={activeProfile.name}
+                onChange={(event) => setProfileName(event.target.value)}
+                onBlur={() =>
+                  setProfiles((profiles) => {
+                    const profile = profiles?.get(state.id);
+                    if (!profile) return;
+                    profile.name = profileName || '';
+                  })
+                }
+                value={profileName}
                 sx={{ width: 160 }}
               />
             </FlexItem>
@@ -111,6 +159,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 }}
               />
             </FlexItem>
+
             <FlexItem>
               <FormControlLabel
                 label="Show Dangerous Actions"
@@ -125,6 +174,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 }
               />
             </FlexItem>
+
             {showDangerousActions && (
               <>
                 Upload new JSON-data. This resets all skills, inputs and
@@ -132,7 +182,6 @@ export const Settings: React.FC<SettingsProps> = ({
                 <label htmlFor="contained-button-file">
                   <Input
                     accept="application/json"
-                    id="contained-button-file"
                     type="file"
                     onChange={(event) => {
                       const reader = new FileReader();
@@ -146,7 +195,8 @@ export const Settings: React.FC<SettingsProps> = ({
                           data: evt.target?.result as string,
                         });
                       };
-                      console.log(event.target.files);
+                      event.target.value = '';
+                      event.target.files = null;
                     }}
                   />
                   <Button component="span" color="warning" fullWidth>

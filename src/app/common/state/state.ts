@@ -4,6 +4,7 @@ import {
   processAddRecipeAction,
   processAddRecipeFromInputAction,
 } from './state-actions/add-recipe.action';
+import { importProfileAction } from './state-actions/import-profile.action';
 import { processRemoveRecipeAction } from './state-actions/remove-recipe.action';
 import { updateCalorieCostAction } from './state-actions/update-calorie-cost.action';
 import { updateCraftingStationAction } from './state-actions/update-crafting-station.action';
@@ -91,6 +92,7 @@ export enum ActionType {
   UPDATE_CRAFTING_STATION_UPGRADE,
   UPDATE_PROFESSION,
   UPDATE_CALORIE_COST,
+  IMPORT_PROFILE,
   UPDATE_MARGIN,
 }
 
@@ -120,6 +122,11 @@ interface UpdateItemPriceAction {
     name: string;
     price: number;
   };
+}
+
+interface ImportProfileAction {
+  type: ActionType.IMPORT_PROFILE;
+  profileString: string;
 }
 
 interface UpdateByproductPriceAction {
@@ -161,6 +168,7 @@ export type Action =
   | UpdateItemPriceAction
   | UpdateByproductPriceAction
   | UpdateRecipeMarginAction
+  | ImportProfileAction
   | UpdateMarginAction
   | UpdateDataJsonAction
   | UpdateProfessionLevelAction
@@ -223,6 +231,12 @@ function processAction(draft: AppState, action: Action): void {
       });
     case ActionType.UPLOAD_DATA_JSON:
       return updateDataJsonAction({ draft, data: action.data });
+    case ActionType.IMPORT_PROFILE:
+      console.log(action.profileString);
+      return importProfileAction({
+        draft,
+        profileString: action.profileString,
+      });
     default:
       return;
   }

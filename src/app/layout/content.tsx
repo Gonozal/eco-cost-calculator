@@ -1,5 +1,6 @@
 import React from 'react';
 import { useImmer } from 'use-immer';
+import { useDebounce } from '../common/use-debounce.hook';
 import { Profiles } from '../profile/profile.index';
 
 export type ProfileMap = Map<number, Profile>;
@@ -12,6 +13,9 @@ const defaultProfile: Profile = { name: 'Default', id: Math.random() };
 
 export const Content: React.FC = () => {
   const [profiles, setProfiles] = useImmer<ProfileMap | null>(null);
+
+  const debouncedProfiles = useDebounce(profiles, 500);
+
   React.useEffect(() => {
     const loaded = localStorage.getItem('profiles');
     if (loaded) {
@@ -26,10 +30,10 @@ export const Content: React.FC = () => {
   }, [setProfiles]);
 
   React.useEffect(() => {
-    if (!profiles || profiles.size === 0) return;
+    if (!debouncedProfiles || debouncedProfiles.size === 0) return;
     console.log('saving profile');
-    localStorage.setItem('profiles', JSON.stringify([...profiles]));
-  }, [profiles, setProfiles]);
+    localStorage.setItem('profiles', JSON.stringify([...debouncedProfiles]));
+  }, [debouncedProfiles, setProfiles]);
 
   if (!profiles) return null;
   return <Profiles profiles={profiles} setProfiles={setProfiles} />;
