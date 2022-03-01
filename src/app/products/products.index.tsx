@@ -5,12 +5,10 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   IconButton,
   InputAdornment,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
 import { Recipe } from '../../data/recipes';
@@ -151,11 +149,15 @@ const RecipeSettings: React.FC<RecipeSettingsProps> = ({
   const [margin, setMargin] = React.useState(
     (primaryRecipe?.margin || 0) * 100,
   );
+  const [fixedCost, setFixedCost] = React.useState(
+    primaryRecipe?.fixedCost || 0,
+  );
+
   const [isDialogVisible, setIsDialogVisible] = React.useState(false);
 
   const isOriginal = React.useMemo(
-    () => batchSize === 0 && margin === 0,
-    [batchSize, margin],
+    () => batchSize === 0 && margin === 0 && fixedCost === 0,
+    [batchSize, margin, fixedCost],
   );
   if (recipes.length > 1) return <IconButton sx={{ width: 34 }} />;
 
@@ -195,6 +197,17 @@ const RecipeSettings: React.FC<RecipeSettingsProps> = ({
                 sx={{ width: 140, paddingLeft: 4 }}
               />
             </FlexItem>
+            <FlexItem>
+              <Typography component="span">Fixed Cost</Typography>
+              <NumberInput
+                value={fixedCost}
+                onChange={(event) => {
+                  const parsed = parseInt(event.target.value, 10);
+                  setFixedCost(isNaN(parsed) ? fixedCost : parsed);
+                }}
+                sx={{ width: 140, paddingLeft: 4 }}
+              />
+            </FlexItem>
           </Stack>
         </DialogContent>
         <DialogActions>
@@ -213,6 +226,7 @@ const RecipeSettings: React.FC<RecipeSettingsProps> = ({
                 type: ActionType.UPDATE_RECIPE_SETTINGS,
                 updatedRecipe: {
                   name: primaryRecipe.name,
+                  fixedCost,
                   batchSize,
                   margin: margin / 100,
                 },

@@ -170,7 +170,7 @@ function updateRecipePrice({ draft, recipe }: UpdateRecipePriceProps) {
       (recipe.calories || 0)) /
     1000;
 
-  const totalCost = ingredientsCost + calorieCost;
+  const totalCost = ingredientsCost + calorieCost + (recipe.fixedCost ?? 0);
 
   const byproduct = draft.byproducts.get(recipe.byproduct?.name || '');
 

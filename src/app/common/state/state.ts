@@ -59,6 +59,7 @@ export interface CraftingRecipe extends Recipe {
   highlighted: boolean;
   batchSize?: number;
   margin?: number;
+  fixedCost?: number;
 }
 export type UpgradeLevel = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -140,6 +141,7 @@ interface UpdateRecipeMarginAction {
     name: string;
     margin: number;
     batchSize: number;
+    fixedCost?: number;
   };
 }
 
