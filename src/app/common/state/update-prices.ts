@@ -160,7 +160,6 @@ function updateRecipePrice({ draft, recipe }: UpdateRecipePriceProps) {
     const batchedQuantity = recipe.batchSize
       ? Math.ceil(itemQuantity * recipe.batchSize) / recipe.batchSize
       : itemQuantity;
-    console.log({ itemQuantity, batchedQuantity });
 
     return cost + batchedQuantity * item.price;
   }, 0);

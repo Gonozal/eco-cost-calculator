@@ -13,12 +13,10 @@ import {
 import React from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { FlexItem } from '../common/flex-grid-item';
-import { ProfileMap } from '../layout/content';
-import { Action, ActionType, AppState, replacer } from '../common/state/state';
-import { Updater } from 'use-immer';
+import { ActionType, replacer } from '../common/state/state';
 import { NumberInput } from '../common/number-input';
 import styled from 'styled-components';
-import { profile } from 'console';
+import { useActiveProfile, useProfiles } from '../common/state/state-provider';
 
 const Input = styled('input')({
   display: 'none',
@@ -26,20 +24,13 @@ const Input = styled('input')({
 interface SettingsProps {
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
-  profiles: ProfileMap;
-  setProfiles: Updater<ProfileMap | null>;
-  state: AppState;
-  dispatch: React.Dispatch<Action>;
 }
 export const Settings: React.FC<SettingsProps> = ({
   setIsVisible,
   isVisible,
-  profiles,
-  setProfiles,
-  state,
-  dispatch,
 }) => {
-  const activeProfile = profiles.get(state.id);
+  const activeProfile = useActiveProfile();
+  const { dispatch, profiles } = useProfiles();
   const [profileName, setProfileName] = React.useState(activeProfile?.name);
 
   const [showDangerousActions, setShowDangerousActions] = React.useState(false);
@@ -73,7 +64,7 @@ export const Settings: React.FC<SettingsProps> = ({
               <Button
                 component="a"
                 href={window.URL.createObjectURL(
-                  new Blob([JSON.stringify(state, replacer)]),
+                  new Blob([JSON.stringify(activeProfile, replacer)]),
                 )}
                 download="cost-calc-profile.json"
               >
@@ -116,10 +107,9 @@ export const Settings: React.FC<SettingsProps> = ({
                 inputProps={{ style: { textAlign: 'right' } }}
                 onChange={(event) => setProfileName(event.target.value)}
                 onBlur={() =>
-                  setProfiles((profiles) => {
-                    const profile = profiles?.get(state.id);
-                    if (!profile) return;
-                    profile.name = profileName || '';
+                  dispatch({
+                    type: ActionType.UPDATE_PROFILE_NAME,
+                    newName: profileName || '',
                   })
                 }
                 value={profileName}
@@ -129,7 +119,7 @@ export const Settings: React.FC<SettingsProps> = ({
             <FlexItem>
               <Typography component="span">Profit Margin</Typography>
               <NumberInput
-                value={state.margin * 100}
+                value={activeProfile.margin * 100}
                 onChange={(event) => {
                   const parsed = parseFloat(event.target.value);
                   dispatch({
@@ -148,7 +138,7 @@ export const Settings: React.FC<SettingsProps> = ({
             <FlexItem>
               <Typography component="span">Cost per kcal</Typography>
               <NumberInput
-                value={state.calorieCost}
+                value={activeProfile.calorieCost}
                 sx={{ width: 160 }}
                 onChange={(event) => {
                   const parsed = parseFloat(event.target.value);
@@ -209,9 +199,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   color="error"
                   onClick={() => {
                     if (profiles.size === 1) return;
-                    setProfiles((profile) => {
-                      profile?.delete(state.id);
-                    });
+                    dispatch({ type: ActionType.DELETE_ACTIVE_PROFILE });
                   }}
                 >
                   Delete Profile
@@ -221,8 +209,8 @@ export const Settings: React.FC<SettingsProps> = ({
           </>
         ) : (
           <>
-            <Typography>{state.margin * 100}%</Typography>
-            <Typography>{state.calorieCost}/kcal</Typography>
+            <Typography>{activeProfile.margin * 100}%</Typography>
+            <Typography>{activeProfile.calorieCost}/kcal</Typography>
           </>
         )}
       </Stack>

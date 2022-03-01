@@ -18,6 +18,8 @@ export const importProfileAction = ({
     draft.inputs = json.inputs;
     draft.products = json.products;
     draft.byproducts = json.byproducts;
+    draft.calorieCost = json.calorieCost;
+    draft.margin = json.margin;
 
     console.log(draft);
   } catch (error) {

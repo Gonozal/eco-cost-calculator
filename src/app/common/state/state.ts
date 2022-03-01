@@ -1,5 +1,6 @@
 import { current, original } from 'immer';
 import { Profession, Recipe, recipes } from '../../../data/recipes';
+import { Profile } from '../../layout/content';
 import {
   processAddRecipeAction,
   processAddRecipeFromInputAction,
@@ -27,6 +28,7 @@ export type CraftingRecipeMap = Map<string, CraftingRecipe>;
 export type CraftingStationMap = Map<string, CraftingStation>;
 export type ProfessionMap = Map<string, ProfessionState>;
 export interface AppState {
+  name: string;
   id: number;
   calorieCost: number;
   margin: number;
@@ -67,9 +69,19 @@ export interface CraftingStation {
   workflowFactor: number;
   usedByRecipes: Set<string>;
 }
+export const LOCAL_STORAGE_KEY = 'appState';
+
+export type ProfileMap = Map<number, AppState>;
+
+export interface Profiles {
+  activeProfile: number;
+  profiles: ProfileMap;
+  dispatch: React.Dispatch<Action>;
+}
 
 export const initialState: AppState = {
   id: Math.random(),
+  name: 'Default',
   calorieCost: 0,
   margin: 0,
   inputs: new Map(),
@@ -81,6 +93,12 @@ export const initialState: AppState = {
   updating: new Set(),
   updated: new Set(),
   data: recipes,
+};
+
+export const standardProfiles: Profiles = {
+  activeProfile: 0,
+  profiles: new Map([[0, { ...initialState, id: 0 }]]),
+  dispatch: (action: Action) => undefined,
 };
 
 export enum ActionType {
@@ -96,6 +114,10 @@ export enum ActionType {
   UPDATE_CALORIE_COST,
   IMPORT_PROFILE,
   UPDATE_MARGIN,
+  UPDATE_PROFILE_NAME,
+  ADD_PROFILE,
+  DELETE_ACTIVE_PROFILE,
+  SET_ACTIVE_PROFILE,
 }
 
 interface AddRecipeAction {
@@ -166,6 +188,25 @@ interface UpdateCalorieCostAction {
   newCost: number;
 }
 
+interface SetActiveProfileAction {
+  type: ActionType.SET_ACTIVE_PROFILE;
+  activeProfileId: number;
+}
+
+interface AddProfileAction {
+  type: ActionType.ADD_PROFILE;
+  newProfile: Profile;
+}
+
+interface UpdateProfileNameAction {
+  type: ActionType.UPDATE_PROFILE_NAME;
+  newName: string;
+}
+
+interface DeleteActiveProfileAction {
+  type: ActionType.DELETE_ACTIVE_PROFILE;
+}
+
 export type Action =
   | AddRecipeAction
   | AddRecipeFromInputAction
@@ -178,28 +219,60 @@ export type Action =
   | UpdateDataJsonAction
   | UpdateProfessionLevelAction
   | UpdateCraftingStationAction
-  | UpdateCalorieCostAction;
+  | UpdateCalorieCostAction
+  | AddProfileAction
+  | DeleteActiveProfileAction
+  | UpdateProfileNameAction
+  | SetActiveProfileAction;
 
-export function reducer(draft: AppState, action: Action): void | AppState {
+export function reducer(draft: Profiles, action: Action): void | Profiles {
   console.time('state update');
+
+  // global state altering actions
+  processGlobalAction(draft, action);
+
+  // actions regarding a single profile
+  const activeProfile = draft.profiles.get(draft.activeProfile);
+  if (!activeProfile) return;
   try {
-    processAction(draft, action);
+    processProfileAction(activeProfile, action);
   } catch (error) {
     console.error(error);
     console.warn({
-      originalState: original(draft),
-      newState: current(draft),
+      originalState: original(activeProfile),
+      newState: current(activeProfile),
     });
   }
 
-  draft.updating = new Set();
-  draft.updated = new Set();
+  activeProfile.updating = new Set();
+  activeProfile.updated = new Set();
+
   const newState = serializeState(current(draft));
-  localStorage.setItem(`state-${draft.id}`, newState);
+  localStorage.setItem(LOCAL_STORAGE_KEY, newState);
   console.timeEnd('state update');
 }
 
-function processAction(draft: AppState, action: Action): void {
+function processGlobalAction(draft: Profiles, action: Action): void {
+  switch (action.type) {
+    case ActionType.SET_ACTIVE_PROFILE:
+      draft.activeProfile = action.activeProfileId;
+      return;
+    case ActionType.ADD_PROFILE:
+      const id = Math.random();
+      draft.profiles.set(id, {
+        ...initialState,
+        ...action.newProfile,
+        id,
+      });
+      return;
+    case ActionType.DELETE_ACTIVE_PROFILE:
+      draft.profiles.delete(draft.activeProfile);
+      draft.activeProfile = Array.from(draft.profiles.keys())[0];
+      return;
+  }
+}
+
+function processProfileAction(draft: AppState, action: Action): void {
   switch (action.type) {
     case ActionType.ADD_RECIPE:
       return processAddRecipeAction({ draft, addedRecipe: action.addedRecipe });
@@ -247,6 +320,9 @@ function processAction(draft: AppState, action: Action): void {
         draft,
         updatedRecipe: action.updatedRecipe,
       });
+    case ActionType.UPDATE_PROFILE_NAME:
+      draft.name = action.newName;
+      return;
     default:
       return;
   }
@@ -313,10 +389,10 @@ export function reviver(_: string, value: any) {
   else return value;
 }
 
-export function serializeState(state: AppState): string {
+export function serializeState(state: Profiles): string {
   return JSON.stringify(state, replacer);
 }
 
-export function deserializeState(serialized: string): AppState {
+export function deserializeState(serialized: string): Profiles {
   return JSON.parse(serialized, reviver);
 }

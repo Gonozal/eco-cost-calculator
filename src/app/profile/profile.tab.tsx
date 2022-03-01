@@ -1,59 +1,56 @@
+import { Grid } from '@mui/material';
 import React from 'react';
-import { Updater } from 'use-immer';
-import {
-  AppState,
-  deserializeState,
-  initialState,
-} from '../common/state/state';
-import { ProfileMap } from '../layout/content';
-import { ProfileWrapper } from './profile.wrapper';
+import { useActiveProfile, useProfiles } from '../common/state/state-provider';
+import { Ingredients } from '../ingredients/ingredients.index';
+import { Section } from '../layout/section';
+import { Product } from '../products/products.index';
+import { SkillSegment } from '../skills/skill-element';
+import { Settings } from './settings';
 
-interface ProfileTabProps {
-  selectedProfileId: number;
-  profileName: string;
-  profileId: number;
-  profiles: ProfileMap;
-  setProfiles: Updater<ProfileMap | null>;
-}
+export const ProfileTab: React.FC = () => {
+  const { dispatch } = useProfiles();
+  const activeProfile = useActiveProfile();
+  const [showProfile, setShowProfile] = React.useState(false);
 
-export const ProfileTab: React.FC<ProfileTabProps> = ({
-  profileName,
-  profileId,
-  selectedProfileId,
-  profiles,
-  setProfiles,
-  children,
-  ...other
-}) => {
-  const [loadedState, setLoadedState] = React.useState<AppState | null>(null);
-
-  React.useEffect(() => {
-    const loaded = localStorage.getItem(`state-${profileId}`);
-    if (!loaded) {
-      setLoadedState({ ...initialState, id: profileId });
-      return;
-    }
-    const state = deserializeState(loaded);
-    setLoadedState(state);
-  }, [setLoadedState, profileId]);
-
-  if (!loadedState) return null;
+  if (!activeProfile) return null;
   return (
-    <div
-      role="tabpanel"
-      hidden={selectedProfileId !== profileId}
-      id={`profile-tabpanel-${profileId}`}
-      aria-labelledby={`profile-tab-${profileId}`}
-      style={{ height: '100%' }}
-      {...other}
+    <Grid
+      container
+      spacing={1}
+      columns={16}
+      sx={{ padding: 2, height: '100%' }}
     >
-      {selectedProfileId === profileId && (
-        <ProfileWrapper
-          loadedState={loadedState}
-          profiles={profiles}
-          setProfiles={setProfiles}
-        />
-      )}
-    </div>
+      <Grid item xs={showProfile ? 3 : 1}>
+        <Settings isVisible={showProfile} setIsVisible={setShowProfile} />
+      </Grid>
+      <Grid item xs={showProfile ? 4 : 5}>
+        <Section heading="Skills and Crafting Stations">
+          <SkillSegment
+            dispatch={dispatch}
+            craftingStations={activeProfile.craftingStations}
+            professions={activeProfile.professions}
+          />
+        </Section>
+      </Grid>
+      <Grid item xs={showProfile ? 4 : 5}>
+        <Section heading="Inputs">
+          <Ingredients
+            dispatch={dispatch}
+            byproducts={activeProfile.byproducts}
+            inputs={activeProfile.inputs}
+          />
+        </Section>
+      </Grid>
+      <Grid item xs={5}>
+        <Section heading="Products">
+          <Product
+            dispatch={dispatch}
+            data={activeProfile.data}
+            products={activeProfile.products}
+            recipes={activeProfile.recipes}
+          />
+        </Section>
+      </Grid>
+    </Grid>
   );
 };
