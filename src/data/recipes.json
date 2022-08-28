@@ -26789,7 +26789,13 @@
     "time": 6.0,
     "calories": 180.0,
     "table": "Advanced Tailoring Table",
-    "professions": []
+    "professions": [
+      {
+        "name": "TailoringSkill",
+        "displayName": "Tailoring",
+        "level": 6
+      }
+    ]
   },
   {
     "name": "Nylon Futon Couch",
