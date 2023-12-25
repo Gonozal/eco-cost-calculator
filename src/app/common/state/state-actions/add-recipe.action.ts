@@ -59,9 +59,9 @@ export function processAddRecipeAction({
         productOfRecipes: new Set(),
         byproductOfRecipes: new Set(),
         canBeProduced: Boolean(
-          draft.data.find(
-            (recipe) => recipe.mainProduct.name === ingredient.name,
-          ),
+          draft.data.find((recipe) => {
+            return recipe.mainProduct.name === ingredient.name;
+          }),
         ),
       });
     }

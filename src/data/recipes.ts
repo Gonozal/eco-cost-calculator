@@ -1,5 +1,7 @@
 import protoRecipe from './recipes.json';
 
+type ProtoRecipe = typeof protoRecipe;
+
 export interface Recipe {
   ingredients: Ingredient[];
   mainProduct: Product;
@@ -41,8 +43,8 @@ export type Ingredient = ItemIngredient | TagIngredient;
 
 export const recipes: Recipe[] = recipesFromJson(protoRecipe);
 
-export function recipesFromJson(json: any) {
-  return json.map((recipe: any) => {
+export function recipesFromJson(json: ProtoRecipe) {
+  return json.map((recipe) => {
     const mainProduct = getMainProduct(recipe.products);
     const byproduct = getByproduct(recipe.products);
 
